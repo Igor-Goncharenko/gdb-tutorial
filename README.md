@@ -235,3 +235,22 @@ $1 = 32767
 $2 = 62
 ```
 
+## 6. Удаление точек остановки, команды info breakpoints и delete
+Если точка остановик или отслеживаемая переменная больше не нужна, то её можно удалить. Для этого
+нужно узнать идентификатор, его можно узнать с помощью команды `info breakpoints`, и после этого
+удалить командой `delete <id>`. Например:
+```gdb
+(gdb) info breakpoints
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x0000555555555126 in test_func at test.c:4
+        breakpoint already hit 1 time
+2       breakpoint     keep y   0x0000555555555148 in main at test.c:11
+3       hw watchpoint  keep y                      i
+(gdb) delete 3
+(gdb) info breakpoints
+Num     Type           Disp Enb Address            What
+1       breakpoint     keep y   0x0000555555555126 in test_func at test.c:4
+        breakpoint already hit 1 time
+2       breakpoint     keep y   0x0000555555555148 in main at test.c:11
+```
+
