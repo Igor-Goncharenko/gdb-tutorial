@@ -193,3 +193,45 @@ Continuing.
 ```
 Таким образом мы отладили программу.
 
+## 5. Наблюдаем за изменением переменной, команда watch
+В прошлом пункте мы отслеживали изменениие значения переменной `i` с помощью точки остановки и
+команды `print`, но есть более простой способ сделать это.
+```gdb
+(gdb) break test.c:3
+Breakpoint 1 at 0x1124: file test.c, line 3.
+(gdb) run
+Breakpoint 1, test_func () at test.c:3
+3           for (; i < 55; i += 2) {
+(gdb) watch i
+Hardware watchpoint 2: i
+(gdb) continue
+Continuing.
+
+Hardware watchpoint 2: i
+
+Old value = 0
+New value = 2
+0x000055555555512d in test_func () at test.c:3
+3           for (; i < 55; i += 2) {
+```
+Здесь мы ставим точку остановки перед циклом, и когда достигаем её, то начинаем отслеживать
+переменную `i` (мы не можем начать отслеживать переменную до её объявления). 
+Когда переменная изменяется, программа останавливается. Продолжить выполнение программы можно
+командой `continue`. Так мы продолжаем выполнение программы, пока цикл не закончится, когда это
+произойдёт, мы увидим следующее сообщение:
+```gdb
+(gdb) continue
+Continuing.
+
+Watchpoint 2 deleted because the program has left the block in
+which its expression is valid.
+0x0000555555555145 in main () at test.c:10
+10          int res = test_func();
+(gdb) print res
+$1 = 32767
+(gdb) next
+11          return 0;
+(gdb) print res
+$2 = 62
+```
+
