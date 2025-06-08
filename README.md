@@ -132,3 +132,64 @@ Continuing.
 ```
 Процесс успешно завершился.
 
+## 4. Добавляем больше break-ов, команда continue
+- `continue` - продолжает выполнение программы до следующей точки остановки или конца программы.
+
+Рассмотрим более сложную программу:
+```c
+int test_func(void) {
+    int i = 0;
+    for (; i < 55; i += 2) {
+        i *= 2;
+    }
+    return i;
+}
+
+int main(void) {
+    int res = test_func();
+    return 0;
+}
+```
+Скомпилируем её и запустим дебаггер. Добавим две точки остановки: на 4 и на 11 строке:
+```gdb
+(gdb) break test.c:4
+Breakpoint 1 at 0x1126: file test.c, line 4.
+(gdb) break test.c:11
+Breakpoint 2 at 0x1148: file test.c, line 11.
+```
+Запускаем программу командой `run`.
+
+GDB остановится, когда дойдёт до первой точки остановки:
+```gdb
+Breakpoint 1, test_func () at test.c:4
+4               i *= 2;
+(gdb) print i
+$1 = 0
+```
+
+Чтобы продолжить выполнение программы, нужно ввести команду:
+```gdb
+(gdb) continue
+Continuing.
+
+Breakpoint 1, test_func () at test.c:4
+4               i *= 2;
+(gdb) print i
+$2 = 2
+```
+Мы снова попали в точку остановки на 4-ой линии. Так будет продолжаться пока мы не выйдем из цикла.
+А когда мы выйдем из цикла, то попадём в следующую точку остановки на линии 11:
+```gdb
+(gdb) continue
+Continuing.
+
+Breakpoint 2, main () at test.c:11
+11          return 0;
+(gdb) print res
+$6 = 62
+(gdb) continue
+Continuing.
+[Inferior 1 (process 11972) exited normally]
+```
+Таким образом мы отладили программу.
+
