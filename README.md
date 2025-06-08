@@ -254,7 +254,59 @@ Num     Type           Disp Enb Address            What
 2       breakpoint     keep y   0x0000555555555148 in main at test.c:11
 ```
 
-## 7. Сокращение команд
+## 7. Ловим ошибки памяти, команда backtrace
+Рассмотрим программу:
+```c
+#include <stdlib.h>
+
+void segfault(void) {
+    char *data = malloc(10);
+    free(data);
+    free(data);
+}
+
+int main(void) {
+    segfault();
+    return 0;
+}
+```
+Здесь мы два раза освобождаем память.
+Когда мы запустим программу, то увидим следующее сообщение:
+```gdb
+(gdb) run
+Using host libthread_db library "/usr/lib/libthread_db.so.1".
+free(): double free detected in tcache 2
+
+Program received signal SIGABRT, Aborted.
+Downloading 4.48 K source file /usr/src/debug/glibc/glibc/nptl/pthread_kill.c
+__pthread_kill_implementation (threadid=<optimized out>, signo=signo@entry=6, no_tid=no_tid@entry=0)
+    at pthread_kill.c:44
+44            return INTERNAL_SYSCALL_ERROR_P (ret) ? INTERNAL_SYSCALL_ERRNO (ret) : 0;
+```
+В таком случае можно использовать команду `backtrace`:
+```gdb
+(gdb) backtrace
+#0  __pthread_kill_implementation (threadid=<optimized out>, signo=signo@entry=6, no_tid=no_tid@entry=0)
+    at pthread_kill.c:44
+#1  0x00007ffff7e4b813 in __pthread_kill_internal (threadid=<optimized out>, signo=6)
+    at pthread_kill.c:89
+#2  0x00007ffff7df1dc0 in __GI_raise (sig=sig@entry=6) at ../sysdeps/posix/raise.c:26
+#3  0x00007ffff7dd957a in __GI_abort () at abort.c:73
+#4  0x00007ffff7dda5c9 in __libc_message_impl (fmt=fmt@entry=0x7ffff7f6639f "%s\n")
+    at ../sysdeps/posix/libc_fatal.c:134
+#5  0x00007ffff7e55a35 in malloc_printerr (
+    str=str@entry=0x7ffff7f68f98 "free(): double free detected in tcache 2") at malloc.c:5829
+#6  0x00007ffff7e55ac3 in tcache_double_free_verify (e=e@entry=0x5555555592a0, tc_idx=tc_idx@entry=0)
+    at malloc.c:3240
+#7  0x00007ffff7e5af6a in tcache_free (p=<optimized out>, size=32) at malloc.c:3263
+#8  _int_free (av=0x7ffff7f9aac0 <main_arena>, p=<optimized out>, have_lock=0) at malloc.c:4695
+#9  __GI___libc_free (mem=<optimized out>) at malloc.c:3476
+#10 0x0000555555555177 in segfault () at test.c:6
+#11 0x0000555555555183 in main () at test.c:10
+```
+В строке `#10 0x0000555555555177 in segfault () at test.c:6` можно обнаружить, где произошла ошибка.
+
+## 8. Сокращение команд
 У многих команд в gdb есть свои сокращения, далее я их перечислю:
 - `run` - `r`;
 - `next` - `n`;
@@ -263,9 +315,10 @@ Num     Type           Disp Enb Address            What
 - `print` - `p`;
 - `break` - `b`;
 - `continue` - `c`;
-- `info breakpoints` - `i b`;
+- `backtrace` - `bt`;
+- `info breakpoints` - `i b`.
 
-## 8. Другие интересные команды
+## 9. Другие интересные команды
 - `print sizeof(var)` - выводит размер переменной в байтах;
 - `ptype var` - выводит тип данных переменной `var`;
 - `x/4xb var` - выводит 4 байта переменной `var` в шестнадцатеричном формате;
