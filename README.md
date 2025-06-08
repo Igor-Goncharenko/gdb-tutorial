@@ -254,3 +254,14 @@ Num     Type           Disp Enb Address            What
 2       breakpoint     keep y   0x0000555555555148 in main at test.c:11
 ```
 
+## 7. Сокращение команд
+У многих команд в gdb есть свои сокращения, далее я их перечислю:
+- `run` - `r`;
+- `next` - `n`;
+- `quit` - `q`;
+- `help` - `h`.
+- `print` - `p`;
+- `break` - `b`;
+- `continue` - `c`;
+- `info breakpoints` - `i b`;
+
